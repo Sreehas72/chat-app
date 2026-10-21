@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      color-scheme: light dark;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --background: #f1f5f9;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --received: #f1f5f9;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #0f172a;
+        --panel: #1e293b;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --border: #334155;
+        --received: #334155;
+      }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--background);
+      color: var(--text);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #ffffff;
+      padding: 0.75rem 1.25rem;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 0.75rem 1rem;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      outline: 2px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+
+    .screen {
+      width: min(100% - 2rem, 860px);
+      margin-inline: auto;
+    }
+
+    #join-screen {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding-block: 2rem;
+    }
+
+    .join-card {
+      width: min(100%, 400px);
+      padding: 2rem;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: 0 20px 45px rgb(15 23 42 / 0.12);
+    }
+
+    .join-card h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.75rem;
+    }
+
+    .join-card p {
+      margin: 0 0 1.5rem;
+      color: var(--muted);
+    }
+
+    .join-card label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .join-card input {
+      margin-bottom: 1rem;
+    }
+
+    .join-card button {
+      width: 100%;
+    }
+
+    .error {
+      min-height: 1.5rem;
+      margin: 0.75rem 0 0;
+      color: #dc2626;
+      font-size: 0.9rem;
+    }
+
+    #chat-screen {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-block: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chat-header h1 {
+      margin: 0;
+      font-size: 1.35rem;
+    }
+
+    .presence {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .presence::before {
+      content: "";
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    #messages {
+      flex: 1;
+      margin: 0;
+      padding: 1rem 0;
+      overflow-y: auto;
+      list-style: none;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      width: fit-content;
+      max-width: min(80%, 560px);
+      margin-bottom: 0.85rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 4px 14px 14px 14px;
+      background: var(--received);
+    }
+
+    .message.own {
+      margin-left: auto;
+      border-radius: 14px 4px 14px 14px;
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .message-meta {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .message.own .message-meta {
+      justify-content: flex-end;
+      color: #dbeafe;
+    }
+
+    .message-author {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .message.own .message-author {
+      color: #ffffff;
+    }
+
+    .message-text {
+      margin: 0;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .system-message {
+      margin: 0.5rem 0 1rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-align: center;
+    }
+
+    .composer {
+      display: flex;
+      gap: 0.75rem;
+      padding-block: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .composer input {
+      flex: 1;
+    }
+
+    @media (max-width: 540px) {
+      .screen {
+        width: 100%;
+        padding-inline: 1rem;
+      }
+
+      #join-screen {
+        padding-inline: 0;
+      }
+
+      .chat-header {
+        padding-block: 1rem;
+      }
+
+      .message {
+        max-width: 90%;
+      }
+
+      .composer button {
+        padding-inline: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section id="join-screen" class="screen">
+    <form id="join-form" class="join-card">
+      <h1>Join the chat</h1>
+      <p>Pick a username to start messaging everyone online.</p>
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" minlength="2" maxlength="32" autocomplete="nickname" required autofocus>
+      <button type="submit">Join chat</button>
+      <p id="join-error" class="error" role="alert"></p>
+    </form>
+  </section>
+
+  <section id="chat-screen" class="screen" hidden>
+    <header class="chat-header">
+      <h1>Chat</h1>
+      <span id="presence" class="presence">0 online</span>
+    </header>
+    <ul id="messages" aria-live="polite" aria-label="Messages"></ul>
+    <form id="message-form" class="composer">
+      <label for="message-input" hidden>Message</label>
+      <input id="message-input" type="text" maxlength="2000" autocomplete="off" placeholder="Type a message..." required autofocus>
+      <button type="submit">Send</button>
+    </form>
+  </section>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const joinScreen = document.getElementById('join-screen');
+    const joinForm = document.getElementById('join-form');
+    const joinError = document.getElementById('join-error');
+    const usernameInput = document.getElementById('username');
+    const chatScreen = document.getElementById('chat-screen');
+    const messages = document.getElementById('messages');
+    const presence = document.getElementById('presence');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+
+    let currentUsername = '';
+    let joined = false;
+
+    function scrollToLatest() {
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function formatTime(isoDate) {
+      return new Date(isoDate).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function addSystemMessage(text) {
+      const item = document.createElement('li');
+      item.className = 'system-message';
+      item.textContent = text;
+      messages.append(item);
+      scrollToLatest();
+    }
+
+    function addMessage(message) {
+      const ownMessage = message.username === currentUsername;
+      const item = document.createElement('li');
+      item.className = ownMessage ? 'message own' : 'message';
+
+      const meta = document.createElement('div');
+      meta.className = 'message-meta';
+
+      const author = document.createElement('span');
+      author.className = 'message-author';
+      author.textContent = ownMessage ? 'You' : message.username;
+
+      const time = document.createElement('time');
+      time.dateTime = message.createdAt;
+      time.textContent = formatTime(message.createdAt);
+
+      const text = document.createElement('p');
+      text.className = 'message-text';
+      text.textContent = message.text;
+
+      meta.append(author, time);
+      item.append(meta, text);
+      messages.append(item);
+      scrollToLatest();
+    }
+
+    joinForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const username = usernameInput.value.trim();
+
+      joinError.textContent = '';
+      joinForm.querySelector('button').disabled = true;
+
+      socket.emit('join', username, (result) => {
+        joinForm.querySelector('button').disabled = false;
+
+        if (!result || !result.ok) {
+          joinError.textContent = result?.error || 'Could not join the chat.';
+          return;
+        }
+
+        currentUsername = result.username;
+        joined = true;
+        joinScreen.hidden = true;
+        chatScreen.hidden = false;
+        messageInput.focus();
+      });
+    });
+
+    messageForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const text = messageInput.value.trim();
+
+      if (!text || !joined) {
+        return;
+      }
+
+      messageInput.value = '';
+      messageInput.focus();
+
+      socket.emit('chat message', text, (result) => {
+        if (!result || !result.ok) {
+          addSystemMessage(result?.error || 'Your message could not be sent.');
+        }
+      });
+    });
+
+    socket.on('chat message', addMessage);
+
+    socket.on('system message', (message) => {
+      addSystemMessage(message.text);
+    });
+
+    socket.on('presence', ({ online }) => {
+      presence.textContent = `${online} online`;
+    });
+
+    socket.on('disconnect', () => {
+      if (joined) {
+        addSystemMessage('Connection lost. Trying to reconnect...');
+      }
+    });
+
+    socket.io.on('reconnect', () => {
+      if (joined) {
+        socket.emit('join', currentUsername, (result) => {
+          if (result?.ok) {
+            addSystemMessage('Reconnected.');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
