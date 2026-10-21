@@ -193,6 +193,6 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Chat server running at http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Chat server running on port ${PORT}`);
 });
