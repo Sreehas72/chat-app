@@ -5,7 +5,7 @@ services:
     plan: free
     region: singapore
     branch: master
-    buildCommand: npm ci
+    buildCommand: npm ci --omit=dev
     startCommand: npm start
     healthCheckPath: /health
     autoDeployTrigger: commit
