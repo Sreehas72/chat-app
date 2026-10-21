@@ -1,0 +1,9 @@
+{
+  "name": "chat-app-desktop",
+  "version": "1.0.0",
+  "description": "Desktop wrapper for the Chat App",
+  "main": "main.js",
+  "author": "Sreehas",
+  "license": "MIT",
+  "private": true
+}

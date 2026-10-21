@@ -24,6 +24,7 @@ A real-time, room-based chat application built with Node.js, Express, Socket.io,
 - Vanilla HTML, CSS, and JavaScript
 - Web app manifest and service worker
 - Electron 45 desktop wrapper
+- electron-builder and NSIS for the Windows installer
 
 ## Run locally
 
@@ -66,6 +67,17 @@ To test the wrapper:
 2. Confirm the window opens to the deployed chat app with the **Chat App** title and icon.
 3. Join a room and send a message from both the desktop window and a browser tab.
 4. Press `Alt`, open **View > Toggle Developer Tools**, and run `window.open('https://example.com')` in the Console. The page should open in your default browser, not in a new Electron window.
+
+## Build the Windows installer
+
+The `build:win` script uses electron-builder to create a 64-bit NSIS installer:
+
+```bash
+npm install
+npm run build:win
+```
+
+The installer is written to `release/ChatApp-Setup.exe`. Installation is per-user, and the wizard lets you choose the destination folder. The generated installer is not code-signed, so Windows SmartScreen may display a warning.
 
 ## Environment variables
 
@@ -124,9 +136,12 @@ The app can be installed when served from `localhost` or over HTTPS:
 ├─ server.js                 # Express and Socket.io server
 ├─ db.js                     # SQLite schema and message queries
 ├─ render.yaml               # Render deployment Blueprint
+├─ electron-builder.yml      # Windows installer configuration
 ├─ electron/
 │  ├─ main.js                # Desktop window and external-link handling
 │  ├─ config.js              # Deployed app URL and window title
+│  ├─ before-build.js        # Keeps server dependencies out of the installer
+│  ├─ package.json           # Packaged desktop app metadata
 │  └─ assets/                # Desktop app icons (ICO for Windows, PNG otherwise)
 ├─ package.json
 ├─ public/

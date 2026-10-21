@@ -1,0 +1,30 @@
+appId: com.sreehas.chatapp
+productName: Chat App
+electronVersion: 45.0.0
+asar: true
+beforeBuild: ./electron/before-build.js
+
+directories:
+  app: electron
+  output: release
+
+files:
+  - main.js
+  - config.js
+  - assets/**/*
+
+win:
+  icon: electron/assets/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+
+nsis:
+  artifactName: ChatApp-Setup.exe
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Chat App
